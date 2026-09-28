@@ -1,0 +1,3470 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+
+<style>
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+}
+
+/* =====================================================
+   SKY
+   ===================================================== */
+
+#sky {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+
+    transition: background 5s linear;
+}
+
+
+/* tähtede kiht - pilvede ja ilma all */
+#stars {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 1;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   VISIBLE SUN + MOON DISCS
+   These sit in the sky, behind weather/clouds/foreground.
+   ===================================================== */
+
+#sunDisc,
+#moonDisc {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+
+    transition:
+        left 4s linear,
+        top 4s linear,
+        opacity 1.5s linear;
+}
+
+#sunDisc {
+    width: 34px;
+    height: 34px;
+
+    background:
+        radial-gradient(
+            circle,
+            rgb(255,255,248) 0%,
+            rgb(255,248,210) 28%,
+            rgb(255,214,110) 62%,
+            rgba(255,190,80,0.34) 100%
+        );
+
+    box-shadow:
+        0 0 18px rgba(255,235,170,0.98),
+        0 0 48px rgba(255,208,115,0.60),
+        0 0 110px rgba(255,183,90,0.28);
+}
+
+#moonDisc {
+    width: 26px;
+    height: 26px;
+
+    background:
+        radial-gradient(
+            circle at 38% 34%,
+            rgb(247,250,255) 0%,
+            rgb(214,226,247) 46%,
+            rgb(160,182,220) 100%
+        );
+
+    box-shadow:
+        0 0 14px rgba(205,222,255,0.78),
+        0 0 36px rgba(160,190,255,0.38),
+        0 0 78px rgba(120,160,235,0.16);
+}
+
+
+/* hall kiht väga pilvise ilma jaoks */
+#weatherveil {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+
+    pointer-events: none;
+
+    background: rgb(130, 140, 150);
+    opacity: 0;
+
+    transition:
+        opacity 5s linear,
+        background 5s linear;
+}
+
+
+/* =====================================================
+   CLOUDS
+   ===================================================== */
+
+#clouds {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 3;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   RAINFOREST FOREGROUND
+   ===================================================== */
+
+#foreground {
+    position: fixed;
+    inset: 0;
+
+    z-index: 4;
+
+    pointer-events: none;
+
+    background-image: url("foreground.png");
+    background-size: cover;
+    background-position: center bottom;
+    background-repeat: no-repeat;
+
+    /* JS muudab neid päris päikese ja ilma järgi. */
+    filter: brightness(1) saturate(1) contrast(1);
+    transition: filter 5s linear;
+}
+
+
+/* atmosfääriline kiht, mis seob taeva ja metsa kokku */
+#sceneHaze {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 5s linear, background 5s linear;
+}
+
+
+#waterGrade {
+    position: fixed;
+    inset: 0;
+    z-index: 6;
+    pointer-events: none;
+    mix-blend-mode: multiply;
+    opacity: 0;
+    filter: blur(10px);
+    transition: opacity 5s linear, background 5s linear;
+}
+
+#waterGlow {
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0;
+    filter: blur(18px);
+    transition: opacity 5s linear, background 5s linear;
+}
+
+
+/* =====================================================
+   LIGHTING
+   ===================================================== */
+
+#tint {
+    position: fixed;
+    inset: 0;
+
+    z-index: 8;
+
+    pointer-events: none;
+
+    mix-blend-mode: soft-light;
+
+    transition:
+        background 5s linear,
+        opacity 5s linear;
+}
+
+
+#lightwash {
+    position: fixed;
+    inset: 0;
+
+    z-index: 9;
+
+    pointer-events: none;
+
+    mix-blend-mode: screen;
+
+    transition:
+        background 5s linear,
+        opacity 5s linear;
+}
+
+
+#moonlight {
+    position: fixed;
+    inset: 0;
+
+    z-index: 10;
+
+    pointer-events: none;
+
+    mix-blend-mode: screen;
+
+    opacity: 0;
+
+    transition:
+        background 5s linear,
+        opacity 5s linear;
+}
+
+
+#shade {
+    position: fixed;
+    inset: 0;
+
+    z-index: 11;
+
+    pointer-events: none;
+
+    mix-blend-mode: multiply;
+
+    transition:
+        background 5s linear,
+        opacity 5s linear;
+}
+
+
+/* =====================================================
+   RAIN
+   ===================================================== */
+
+#rain {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 12;
+
+    pointer-events: none;
+}
+
+
+#raindrops {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    z-index: 13;
+
+    pointer-events: none;
+}
+
+
+/* =====================================================
+   DEBUG
+   ===================================================== */
+
+#debug {
+    position: fixed;
+
+    right: 12px;
+    bottom: 12px;
+
+    padding: 8px 10px;
+
+    z-index: 20;
+
+    pointer-events: none;
+
+    background: rgba(0,0,0,0.55);
+
+    color: white;
+
+    font-family: monospace;
+    font-size: 13px;
+    line-height: 1.4;
+
+    border-radius: 5px;
+}
+</style>
+</head>
+
+
+<body>
+
+<div id="sky"></div>
+
+<canvas id="stars"></canvas>
+
+<div id="sunDisc"></div>
+<div id="moonDisc"></div>
+
+<div id="weatherveil"></div>
+
+<canvas id="clouds"></canvas>
+
+<div id="foreground"></div>
+
+<div id="sceneHaze"></div>
+
+<div id="waterGrade"></div>
+
+<div id="waterGlow"></div>
+
+<div id="tint"></div>
+
+<div id="lightwash"></div>
+
+<div id="moonlight"></div>
+
+<div id="shade"></div>
+
+<canvas id="rain"></canvas>
+
+<canvas id="raindrops"></canvas>
+
+<div id="debug"></div>
+
+
+<script type="module">
+
+import * as SunCalc from './suncalc.js';
+
+
+// =====================================================
+// LOCATION
+// =====================================================
+
+const LAT = 58.3776;
+const LON = 26.7290;
+
+// =====================================================
+// CAMERA / MONITOR VIEW
+// =====================================================
+
+// The physical monitor is looking southwest.
+// 225° = southwest.
+const VIEW_AZIMUTH = 225;
+
+// Horizontal slice of the real sky represented by the monitor.
+// With 120°, the screen covers roughly 165° ... 285°.
+const HORIZONTAL_FOV = 120;
+
+// Practical projection for this foreground composition.
+const HORIZON_Y = 79;
+const SKY_TOP_Y = 3;
+const MAX_VISIBLE_ALTITUDE = 68;
+
+
+// =====================================================
+// ELEMENTS
+// =====================================================
+
+const sky =
+    document.querySelector("#sky");
+
+const sunDisc =
+    document.querySelector("#sunDisc");
+
+const moonDisc =
+    document.querySelector("#moonDisc");
+
+const weatherveil =
+    document.querySelector("#weatherveil");
+
+const foreground =
+    document.querySelector("#foreground");
+
+const sceneHaze =
+    document.querySelector("#sceneHaze");
+
+const waterGrade =
+    document.querySelector("#waterGrade");
+
+const waterGlow =
+    document.querySelector("#waterGlow");
+
+const tint =
+    document.querySelector("#tint");
+
+const lightwash =
+    document.querySelector("#lightwash");
+
+const moonlight =
+    document.querySelector("#moonlight");
+
+const shade =
+    document.querySelector("#shade");
+
+const debug =
+    document.querySelector("#debug");
+
+
+// =====================================================
+// HELPERS
+// =====================================================
+
+function clamp(value, min, max) {
+
+    return Math.max(
+        min,
+        Math.min(max, value)
+    );
+}
+
+
+function lerp(a, b, t) {
+
+    return a +
+        (b - a) * t;
+}
+
+
+function signedAngleDelta(angle, center) {
+
+    // Result is always -180 ... +180.
+    return (
+        (angle - center + 540) % 360
+    ) - 180;
+}
+
+
+function projectSkyObject(azimuth, altitude) {
+
+    const delta =
+        signedAngleDelta(
+            azimuth,
+            VIEW_AZIMUTH
+        );
+
+    const halfFov =
+        HORIZONTAL_FOV / 2;
+
+    const x =
+        50 +
+        (delta / HORIZONTAL_FOV) * 100;
+
+    const visibleAltitude =
+        clamp(
+            altitude,
+            0,
+            MAX_VISIBLE_ALTITUDE
+        );
+
+    const altitudeT =
+        visibleAltitude / MAX_VISIBLE_ALTITUDE;
+
+    // exponent < 1 tõstab low/mid altitude objektid kõrgemale
+    const liftedT =
+        Math.pow(
+            altitudeT,
+            0.72
+        );
+
+    const y =
+        lerp(
+            HORIZON_Y,
+            SKY_TOP_Y,
+            liftedT
+        );
+
+    return {
+        x,
+        y,
+        delta,
+        inHorizontalView:
+            Math.abs(delta) <= halfFov
+    };
+}
+
+
+function mixColor(a, b, t) {
+
+    return [
+
+        Math.round(
+            lerp(a[0], b[0], t)
+        ),
+
+        Math.round(
+            lerp(a[1], b[1], t)
+        ),
+
+        Math.round(
+            lerp(a[2], b[2], t)
+        )
+    ];
+}
+
+
+function rgb(c) {
+
+    return `rgb(
+        ${c[0]},
+        ${c[1]},
+        ${c[2]}
+    )`;
+}
+
+
+// =====================================================
+// WEATHER STATE
+// =====================================================
+
+const MIN_RAIN_INTENSITY =
+    0;
+
+
+let rainIntensity =
+    0;
+
+
+let currentPrecipitation = 0;
+
+let currentRain = 0;
+
+let currentShowers = 0;
+
+let currentSnow = 0;
+
+
+let currentCloudCover = 0;
+
+let currentCloudLow = 0;
+
+let currentCloudMid = 0;
+
+let currentCloudHigh = 0;
+
+
+let currentWindSpeed = 0;
+
+let currentWindDirection = 0;
+
+
+// =====================================================
+// SUN STATE
+// =====================================================
+
+let currentSunX = 50;
+let currentSunY = 50;
+let currentSunAltitude = 20;
+let currentSunAzimuth = 180;
+let currentSunInView = false;
+
+let currentMoonX = 50;
+let currentMoonY = 50;
+let currentMoonAltitude = -20;
+let currentMoonAzimuth = 180;
+let currentMoonInView = false;
+let currentMoonIllumination = 0;
+let currentMoonLightAmount = 0;
+
+let currentForegroundBrightness = 1;
+let currentForegroundSaturation = 1;
+let currentSceneHazeOpacity = 0;
+
+let currentStarOpacity = 0;
+
+
+// =====================================================
+// SKY
+// =====================================================
+
+function updateSky(
+    altitude,
+    sunX,
+    sunY
+) {
+
+    // OLED-i jaoks päriselt tume öö.
+    // Kasutame astronoomilise twilighti samme, mitte ühte "night" värvi.
+    const DEEP_TOP = [0, 0, 2];
+    const DEEP_MID = [0, 2, 7];
+    const DEEP_HORIZON = [2, 6, 14];
+
+    const ASTRO_TOP = [1, 3, 10];
+    const ASTRO_MID = [3, 8, 20];
+    const ASTRO_HORIZON = [7, 16, 31];
+
+    const NAUTICAL_TOP = [4, 10, 25];
+    const NAUTICAL_MID = [10, 23, 46];
+    const NAUTICAL_HORIZON = [20, 38, 62];
+
+    const DUSK_TOP = [20, 34, 62];
+    const DUSK_MID = [42, 58, 88];
+    const DUSK_HORIZON = [82, 82, 96];
+
+    const DAY_TOP = [72, 154, 222];
+    const DAY_MID = [123, 195, 238];
+    const DAY_HORIZON = [214, 235, 248];
+
+    let top;
+    let mid;
+    let horizon;
+
+    if (altitude <= -18) {
+
+        top = DEEP_TOP;
+        mid = DEEP_MID;
+        horizon = DEEP_HORIZON;
+    }
+
+    else if (altitude < -12) {
+
+        const t =
+            clamp(
+                (altitude + 18) / 6,
+                0,
+                1
+            );
+
+        top = mixColor(DEEP_TOP, ASTRO_TOP, t);
+        mid = mixColor(DEEP_MID, ASTRO_MID, t);
+        horizon = mixColor(DEEP_HORIZON, ASTRO_HORIZON, t);
+    }
+
+    else if (altitude < -6) {
+
+        const t =
+            clamp(
+                (altitude + 12) / 6,
+                0,
+                1
+            );
+
+        top = mixColor(ASTRO_TOP, NAUTICAL_TOP, t);
+        mid = mixColor(ASTRO_MID, NAUTICAL_MID, t);
+        horizon = mixColor(ASTRO_HORIZON, NAUTICAL_HORIZON, t);
+    }
+
+    else if (altitude < 0) {
+
+        const t =
+            clamp(
+                (altitude + 6) / 6,
+                0,
+                1
+            );
+
+        top = mixColor(NAUTICAL_TOP, DUSK_TOP, t);
+        mid = mixColor(NAUTICAL_MID, DUSK_MID, t);
+        horizon = mixColor(NAUTICAL_HORIZON, DUSK_HORIZON, t);
+    }
+
+    else if (altitude < 8) {
+
+        const t =
+            clamp(
+                altitude / 8,
+                0,
+                1
+            );
+
+        top = mixColor(DUSK_TOP, DAY_TOP, t);
+        mid = mixColor(DUSK_MID, DAY_MID, t);
+        horizon = mixColor(DUSK_HORIZON, DAY_HORIZON, t);
+    }
+
+    else {
+
+        top = DAY_TOP;
+        mid = DAY_MID;
+        horizon = DAY_HORIZON;
+    }
+
+
+    // Päikeseloojangu kuma sureb nüüd päriselt ära,
+    // mitte ei jää pooleks õhtuks monitori kummitama.
+    let glowAlpha = 0;
+
+    if (altitude > -6 && altitude < 6) {
+
+        if (altitude < -1) {
+
+            glowAlpha =
+                lerp(
+                    0.00,
+                    0.16,
+                    clamp(
+                        (altitude + 6) / 5,
+                        0,
+                        1
+                    )
+                );
+        }
+
+        else {
+
+            glowAlpha =
+                lerp(
+                    0.16,
+                    0.05,
+                    clamp(
+                        (altitude + 1) / 7,
+                        0,
+                        1
+                    )
+                );
+        }
+    }
+
+
+    sky.style.background =
+        `
+        radial-gradient(
+            ellipse 38% 10%
+            at ${sunX}% 98%,
+
+            rgba(255,185,95,${glowAlpha}) 0%,
+            rgba(255,170,85,${glowAlpha * 0.42}) 34%,
+            rgba(255,160,80,0) 74%
+        ),
+
+        linear-gradient(
+            to bottom,
+            ${rgb(top)} 0%,
+            ${rgb(mid)} 64%,
+            ${rgb(horizon)} 100%
+        )
+        `;
+
+
+    const overcast =
+        clamp(
+            (currentCloudCover - 35) / 65,
+            0,
+            1
+        );
+
+    if (altitude <= -12) {
+
+        weatherveil.style.background =
+            "rgb(10, 17, 29)";
+    }
+
+    else if (altitude <= -6) {
+
+        weatherveil.style.background =
+            "rgb(28, 42, 66)";
+    }
+
+    else if (altitude < 4) {
+
+        weatherveil.style.background =
+            "rgb(66, 78, 102)";
+    }
+
+    else {
+
+        weatherveil.style.background =
+            "rgb(120, 132, 145)";
+    }
+
+    weatherveil.style.opacity =
+        overcast *
+        (
+            altitude <= -12
+            ? 0.22
+            : 0.30
+        );
+}
+
+
+
+// =====================================================
+// FOREGROUND + WATER + ATMOSPHERE
+// =====================================================
+
+function updateForegroundLighting(
+    altitude,
+    sunX,
+    sunY
+) {
+
+    const cloud =
+        clamp(
+            currentCloudCover / 100,
+            0,
+            1
+        );
+
+    const wetness =
+        clamp(
+            currentPrecipitation / 2.0,
+            0,
+            1
+        );
+
+
+    // -------------------------------------------------
+    // FOREGROUND EXPOSURE
+    // -------------------------------------------------
+
+    let brightness;
+    let saturation;
+    let contrast;
+
+    if (altitude <= -18) {
+
+        brightness = 0.14;
+        saturation = 0.58;
+        contrast = 1.10;
+    }
+
+    else if (altitude < -12) {
+
+        const t =
+            clamp(
+                (altitude + 18) / 6,
+                0,
+                1
+            );
+
+        brightness = lerp(0.14, 0.21, t);
+        saturation = lerp(0.58, 0.66, t);
+        contrast = lerp(1.10, 1.08, t);
+    }
+
+    else if (altitude < -6) {
+
+        const t =
+            clamp(
+                (altitude + 12) / 6,
+                0,
+                1
+            );
+
+        brightness = lerp(0.21, 0.36, t);
+        saturation = lerp(0.66, 0.78, t);
+        contrast = lerp(1.08, 1.05, t);
+    }
+
+    else if (altitude < 0) {
+
+        const t =
+            clamp(
+                (altitude + 6) / 6,
+                0,
+                1
+            );
+
+        brightness = lerp(0.36, 0.74, t);
+        saturation = lerp(0.78, 0.94, t);
+        contrast = lerp(1.05, 1.02, t);
+    }
+
+    else if (altitude < 8) {
+
+        const t =
+            clamp(
+                altitude / 8,
+                0,
+                1
+            );
+
+        brightness = lerp(0.74, 0.96, t);
+        saturation = lerp(0.94, 1.02, t);
+        contrast = lerp(1.02, 1.00, t);
+    }
+
+    else {
+
+        const t =
+            clamp(
+                (altitude - 8) / 28,
+                0,
+                1
+            );
+
+        brightness = lerp(0.96, 1.03, t);
+        saturation = lerp(1.02, 1.05, t);
+        contrast = 1.00;
+    }
+
+
+    // Pilved ja vihm võtavad exposure'it maha.
+    brightness *=
+        1 - cloud * 0.15;
+
+    brightness *=
+        1 - wetness * 0.05;
+
+    saturation *=
+        1 - wetness * 0.08;
+
+
+    currentForegroundBrightness = brightness;
+    currentForegroundSaturation = saturation;
+
+    foreground.style.filter =
+        `brightness(${brightness.toFixed(3)}) ` +
+        `saturate(${saturation.toFixed(3)}) ` +
+        `contrast(${contrast.toFixed(3)})`;
+
+
+    // -------------------------------------------------
+    // HAZE / DISTANCE
+    // -------------------------------------------------
+
+    let hazeR;
+    let hazeG;
+    let hazeB;
+
+    if (altitude <= -12) {
+
+        hazeR = 12;
+        hazeG = 22;
+        hazeB = 42;
+    }
+
+    else if (altitude <= -6) {
+
+        const t =
+            clamp(
+                (altitude + 12) / 6,
+                0,
+                1
+            );
+
+        hazeR = Math.round(lerp(12, 38, t));
+        hazeG = Math.round(lerp(22, 54, t));
+        hazeB = Math.round(lerp(42, 82, t));
+    }
+
+    else if (altitude < 3) {
+
+        const t =
+            clamp(
+                (altitude + 6) / 9,
+                0,
+                1
+            );
+
+        hazeR = Math.round(lerp(38, 126, t));
+        hazeG = Math.round(lerp(54, 142, t));
+        hazeB = Math.round(lerp(82, 166, t));
+    }
+
+    else {
+
+        hazeR = 188;
+        hazeG = 207;
+        hazeB = 220;
+    }
+
+
+    const baseNightHaze =
+        altitude <= -12
+        ? 0.008
+        : 0.022;
+
+    const hazeOpacity =
+        clamp(
+            baseNightHaze +
+            cloud * 0.045 +
+            wetness * 0.09,
+            0,
+            0.16
+        );
+
+    currentSceneHazeOpacity = hazeOpacity;
+
+    sceneHaze.style.background =
+        `linear-gradient(
+            to bottom,
+            rgba(${hazeR}, ${hazeG}, ${hazeB}, 0) 26%,
+            rgba(${hazeR}, ${hazeG}, ${hazeB}, 0.34) 47%,
+            rgba(${hazeR}, ${hazeG}, ${hazeB}, 0.18) 60%,
+            rgba(${hazeR}, ${hazeG}, ${hazeB}, 0) 76%
+        )`;
+
+    sceneHaze.style.opacity =
+        hazeOpacity;
+
+
+    // -------------------------------------------------
+    // WATER COLOR GRADE
+    // -------------------------------------------------
+
+    let waterR;
+    let waterG;
+    let waterB;
+    let waterOpacity;
+
+    if (altitude <= -18) {
+
+        waterR = 2;
+        waterG = 8;
+        waterB = 18;
+        waterOpacity = 0.62;
+    }
+
+    else if (altitude < -12) {
+
+        const t =
+            clamp(
+                (altitude + 18) / 6,
+                0,
+                1
+            );
+
+        waterR = Math.round(lerp(2, 10, t));
+        waterG = Math.round(lerp(8, 22, t));
+        waterB = Math.round(lerp(18, 42, t));
+        waterOpacity = lerp(0.62, 0.56, t);
+    }
+
+    else if (altitude < -6) {
+
+        const t =
+            clamp(
+                (altitude + 12) / 6,
+                0,
+                1
+            );
+
+        waterR = Math.round(lerp(10, 24, t));
+        waterG = Math.round(lerp(22, 44, t));
+        waterB = Math.round(lerp(42, 70, t));
+        waterOpacity = lerp(0.56, 0.45, t);
+    }
+
+    else if (altitude < 0) {
+
+        const t =
+            clamp(
+                (altitude + 6) / 6,
+                0,
+                1
+            );
+
+        waterR = Math.round(lerp(24, 52, t));
+        waterG = Math.round(lerp(44, 74, t));
+        waterB = Math.round(lerp(70, 98, t));
+        waterOpacity = lerp(0.45, 0.28, t);
+    }
+
+    else {
+
+        waterR = 68;
+        waterG = 96;
+        waterB = 118;
+        waterOpacity = 0.17;
+    }
+
+    waterOpacity +=
+        cloud * 0.05 +
+        wetness * 0.04;
+
+    waterGrade.style.background =
+    `linear-gradient(
+        to bottom,
+        rgba(${waterR}, ${waterG}, ${waterB}, 0.00) 0%,
+        rgba(${waterR}, ${waterG}, ${waterB}, 0.00) 48%,
+        rgba(${waterR}, ${waterG}, ${waterB}, 0.10) 56%,
+        rgba(${waterR}, ${waterG}, ${waterB}, 0.55) 72%,
+        rgba(${waterR}, ${waterG}, ${waterB}, 0.92) 100%
+    )`;
+
+    waterGrade.style.opacity =
+        clamp(
+            waterOpacity,
+            0,
+            0.68
+        );
+
+
+    // -------------------------------------------------
+    // WATER HORIZON / SUN REFLECTION
+    // -------------------------------------------------
+
+    const reflectionFactor =
+        clamp(
+            (altitude + 6) / 12,
+            0,
+            1
+        );
+
+    const reflectionCloudBlock =
+        1 - cloud * 0.72;
+
+    const reflectionOpacity =
+        reflectionFactor *
+        reflectionCloudBlock *
+        0.20;
+
+    let reflectionR = 255;
+    let reflectionG = 184;
+    let reflectionB = 100;
+
+    if (altitude > 6) {
+
+        reflectionR = 235;
+        reflectionG = 244;
+        reflectionB = 255;
+    }
+
+    waterGlow.style.background =
+    `radial-gradient(
+        ellipse 24% 12%
+        at ${sunX}% 68%,
+        rgba(${reflectionR}, ${reflectionG}, ${reflectionB}, 0.30) 0%,
+        rgba(${reflectionR}, ${reflectionG}, ${reflectionB}, 0.12) 28%,
+        rgba(${reflectionR}, ${reflectionG}, ${reflectionB}, 0.03) 52%,
+        rgba(${reflectionR}, ${reflectionG}, ${reflectionB}, 0) 78%
+    )`;
+
+    waterGlow.style.opacity =
+        reflectionOpacity;
+}
+
+
+// =====================================================
+// SUN + MOON + LIGHTING
+// =====================================================
+
+function updateLighting() {
+
+    const now =
+        new Date();
+
+    const pos =
+        SunCalc.getPosition(
+            now,
+            LAT,
+            LON
+        );
+
+    const moonPos =
+        SunCalc.getMoonPosition(
+            now,
+            LAT,
+            LON
+        );
+
+    const moonIllumination =
+        SunCalc.getMoonIllumination(
+            now
+        );
+
+
+    const altitude =
+        pos.altitude;
+
+    const azimuth =
+        pos.azimuth;
+
+    const moonAltitude =
+        moonPos.altitude;
+
+    const moonAzimuth =
+        moonPos.azimuth;
+
+
+    // =================================================
+    // PROJECT REAL AZIMUTH INTO THIS MONITOR
+    // Center of the screen = 225° SW.
+    // =================================================
+
+    const sunProjection =
+        projectSkyObject(
+            azimuth,
+            altitude
+        );
+
+    const moonProjection =
+        projectSkyObject(
+            moonAzimuth,
+            moonAltitude
+        );
+
+    // Lighting may still enter slightly from outside the screen,
+    // so the wash is allowed to sit just beyond the edges.
+    const sunX =
+        clamp(
+            sunProjection.x,
+            -20,
+            120
+        );
+
+    const sunY =
+        sunProjection.y;
+
+    const moonX =
+        clamp(
+            moonProjection.x,
+            -20,
+            120
+        );
+
+    const moonY =
+        moonProjection.y;
+
+
+    currentSunX = sunX;
+    currentSunY = sunY;
+    currentSunAltitude = altitude;
+    currentSunAzimuth = azimuth;
+    currentSunInView =
+        sunProjection.inHorizontalView &&
+        altitude > -0.85;
+
+    currentMoonX = moonX;
+    currentMoonY = moonY;
+    currentMoonAltitude = moonAltitude;
+    currentMoonAzimuth = moonAzimuth;
+    currentMoonInView =
+        moonProjection.inHorizontalView &&
+        moonAltitude > -0.35;
+    currentMoonIllumination =
+        clamp(
+            moonIllumination.fraction ?? 0,
+            0,
+            1
+        );
+
+
+    // =================================================
+    // VISIBLE SUN + MOON
+    // The discs only appear when the real object is inside
+    // the 225° SW camera view and above the horizon.
+    // =================================================
+
+    sunDisc.style.left =
+        `${sunProjection.x}%`;
+
+    sunDisc.style.top =
+        `${sunProjection.y}%`;
+
+    sunDisc.style.opacity =
+    currentSunInView
+        ? clamp(
+            1 -
+            (currentCloudCover / 100) * 0.28,
+            0.60,
+            1
+        )
+        : 0;
+
+
+    moonDisc.style.left =
+        `${moonProjection.x}%`;
+
+    moonDisc.style.top =
+        `${moonProjection.y}%`;
+
+    const daylightMoonFade =
+        lerp(
+            1,
+            0.50,
+            clamp(
+                altitude / 35,
+                0,
+                1
+            )
+        );
+
+    const moonDiscStrength =
+        clamp(
+            0.10 +
+            currentMoonIllumination * 0.90,
+            0.10,
+            1
+        ) *
+        daylightMoonFade;
+
+    moonDisc.style.opacity =
+        currentMoonInView
+            ? moonDiscStrength
+            : 0;
+
+
+    updateSky(
+        altitude,
+        sunX,
+        sunY
+    );
+
+    updateForegroundLighting(
+        altitude,
+        sunX,
+        sunY
+    );
+
+
+    // =================================================
+    // SUNLIGHT
+    // =================================================
+
+    let tintR = 255;
+    let tintG = 240;
+    let tintB = 205;
+    let tintOpacity = 0.04;
+
+    let lightR = 255;
+    let lightG = 230;
+    let lightB = 185;
+    let lightOpacity = 0.14;
+
+    let shadeOpacity = 0.06;
+
+
+    if (altitude <= -18) {
+
+        tintR = 8;
+        tintG = 18;
+        tintB = 42;
+        tintOpacity = 0.34;
+
+        lightOpacity = 0;
+        shadeOpacity = 0.24;
+    }
+
+    else if (altitude < -12) {
+
+        const t =
+            clamp(
+                (altitude + 18) / 6,
+                0,
+                1
+            );
+
+        tintR = Math.round(lerp(8, 18, t));
+        tintG = Math.round(lerp(18, 38, t));
+        tintB = Math.round(lerp(42, 76, t));
+        tintOpacity = lerp(0.34, 0.30, t);
+
+        lightOpacity = 0;
+        shadeOpacity = lerp(0.24, 0.21, t);
+    }
+
+    else if (altitude < -6) {
+
+        const t =
+            clamp(
+                (altitude + 12) / 6,
+                0,
+                1
+            );
+
+        tintR = Math.round(lerp(18, 32, t));
+        tintG = Math.round(lerp(38, 55, t));
+        tintB = Math.round(lerp(76, 100, t));
+        tintOpacity = lerp(0.30, 0.24, t);
+
+        lightOpacity = 0;
+        shadeOpacity = lerp(0.21, 0.18, t);
+    }
+
+    else if (altitude < 0) {
+
+        const t =
+            clamp(
+                (altitude + 6) / 6,
+                0,
+                1
+            );
+
+        tintR = Math.round(lerp(32, 105, t));
+        tintG = Math.round(lerp(55, 92, t));
+        tintB = Math.round(lerp(100, 118, t));
+        tintOpacity = lerp(0.24, 0.10, t);
+
+        lightR = 255;
+        lightG = 206;
+        lightB = 158;
+
+        if (altitude <= -2) {
+
+            lightOpacity = 0;
+        }
+
+        else {
+
+            lightOpacity =
+                lerp(
+                    0,
+                    0.12,
+                    clamp(
+                        (altitude + 2) / 2,
+                        0,
+                        1
+                    )
+                );
+        }
+
+        shadeOpacity = lerp(0.18, 0.11, t);
+    }
+
+    else if (altitude < 8) {
+
+        const t =
+            altitude / 8;
+
+        tintR = 255;
+        tintG = 155;
+        tintB = 85;
+        tintOpacity = lerp(0.20, 0.07, t);
+
+        lightR = 255;
+        lightG = 215;
+        lightB = 150;
+        lightOpacity = lerp(0.28, 0.18, t);
+
+        shadeOpacity = lerp(0.12, 0.07, t);
+    }
+
+    else {
+
+        const t =
+            clamp(
+                (altitude - 8) / 30,
+                0,
+                1
+            );
+
+        tintR = 255;
+        tintG = 240;
+        tintB = 205;
+        tintOpacity = lerp(0.07, 0.025, t);
+
+        lightR = 255;
+        lightG = 230;
+        lightB = 185;
+        lightOpacity = lerp(0.18, 0.10, t);
+
+        shadeOpacity = lerp(0.07, 0.035, t);
+    }
+
+
+    const cloudDirectLight =
+        1 -
+        clamp(
+            currentCloudCover / 100,
+            0,
+            1
+        )
+        * 0.68;
+
+    lightOpacity *=
+        cloudDirectLight;
+
+
+    tint.style.background =
+        `rgb(
+            ${tintR},
+            ${tintG},
+            ${tintB}
+        )`;
+
+    tint.style.opacity =
+        tintOpacity;
+
+
+    lightwash.style.background =
+        `
+        radial-gradient(
+            ellipse 92% 72%
+            at ${sunX}% ${sunY}%,
+
+            rgba(
+                ${lightR},
+                ${lightG},
+                ${lightB},
+                ${lightOpacity}
+            ) 0%,
+
+            rgba(
+                ${lightR},
+                ${lightG},
+                ${lightB},
+                ${lightOpacity * 0.50}
+            ) 20%,
+
+            rgba(
+                ${lightR},
+                ${lightG},
+                ${lightB},
+                ${lightOpacity * 0.15}
+            ) 42%,
+
+            rgba(
+                ${lightR},
+                ${lightG},
+                ${lightB},
+                0
+            ) 68%
+        )
+        `;
+
+
+    // =================================================
+    // MOONLIGHT
+    // =================================================
+
+    const moonAboveHorizon =
+        clamp(
+            (moonAltitude + 1.5) / 18,
+            0,
+            1
+        );
+
+    const realNight =
+        clamp(
+            (-altitude - 3) / 9,
+            0,
+            1
+        );
+
+    const moonPhaseStrength =
+        Math.pow(
+            currentMoonIllumination,
+            0.78
+        );
+
+    const moonCloudBlock =
+        1 -
+        clamp(
+            Math.max(
+                currentCloudCover,
+                currentCloudHigh * 0.88
+            ) / 100,
+            0,
+            1
+        )
+        * 0.82;
+
+    currentMoonLightAmount =
+        moonAboveHorizon *
+        realNight *
+        moonPhaseStrength *
+        moonCloudBlock;
+
+    const moonOpacity =
+        currentMoonLightAmount *
+        0.20;
+
+    moonlight.style.background =
+        `
+        radial-gradient(
+            ellipse 96% 78%
+            at ${moonX}% ${moonY}%,
+
+            rgba(175, 202, 255, 0.60) 0%,
+            rgba(155, 188, 255, 0.28) 24%,
+            rgba(128, 164, 235, 0.09) 48%,
+            rgba(100, 135, 210, 0) 72%
+        )
+        `;
+
+    moonlight.style.opacity =
+        moonOpacity;
+
+
+    // =================================================
+    // SHADE AWAY FROM SUN
+    // =================================================
+
+    shade.style.background =
+        `
+        radial-gradient(
+            ellipse 118% 94%
+            at ${sunX}% ${sunY}%,
+
+            rgba(0,0,0,0) 0%,
+            rgba(0,0,0,0) 34%,
+            rgba(0,0,0,${shadeOpacity * 0.40}) 64%,
+            rgba(0,0,0,${shadeOpacity}) 100%
+        )
+        `;
+
+
+    updateDebug();
+}
+
+
+updateLighting();
+
+
+setInterval(
+    updateLighting,
+    60 * 1000
+);
+
+
+// =====================================================
+// RAIN INTENSITY
+// =====================================================
+
+function precipitationToIntensity(mm) {
+
+    // Null tähendab null. Enam ei saja "dekoratiivset" vihma
+    // lihtsalt sellepärast, et inimkond leiutas MIN_RAIN_INTENSITY.
+    if (mm <= 0.02) {
+
+        return 0;
+    }
+
+    if (mm < 0.1) {
+
+        return lerp(
+            0.025,
+            0.08,
+            (mm - 0.02) / 0.08
+        );
+    }
+
+    if (mm < 0.5) {
+
+        return lerp(
+            0.08,
+            0.24,
+            (mm - 0.1) / 0.4
+        );
+    }
+
+    if (mm < 1.5) {
+
+        return lerp(
+            0.24,
+            0.50,
+            (mm - 0.5) / 1
+        );
+    }
+
+    if (mm < 4) {
+
+        return lerp(
+            0.50,
+            0.75,
+            (mm - 1.5) / 2.5
+        );
+    }
+
+    if (mm < 8) {
+
+        return lerp(
+            0.75,
+            0.95,
+            (mm - 4) / 4
+        );
+    }
+
+    return 1;
+}
+
+
+// =====================================================
+// WEATHER FETCH
+// =====================================================
+
+async function updateWeather() {
+
+    try {
+
+        const params =
+            new URLSearchParams({
+
+                latitude:
+                    LAT,
+
+                longitude:
+                    LON,
+
+                current:
+                    "precipitation,rain,showers,snowfall," +
+                    "cloud_cover,cloud_cover_low,cloud_cover_mid,cloud_cover_high," +
+                    "wind_speed_10m,wind_direction_10m",
+
+                precipitation_unit:
+                    "mm",
+
+                wind_speed_unit:
+                    "ms",
+
+                timezone:
+                    "Europe/Tallinn"
+            });
+
+
+        const url =
+            "https://api.open-meteo.com/v1/forecast?"
+            +
+            params.toString();
+
+
+        const response =
+            await fetch(
+                url,
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "Weather HTTP "
+                +
+                response.status
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const weather =
+            data.current;
+
+
+        currentPrecipitation =
+            Number(
+                weather.precipitation
+                ?? 0
+            );
+
+
+        currentRain =
+            Number(
+                weather.rain
+                ?? 0
+            );
+
+
+        currentShowers =
+            Number(
+                weather.showers
+                ?? 0
+            );
+
+
+        currentSnow =
+            Number(
+                weather.snowfall
+                ?? 0
+            );
+
+
+        currentCloudCover =
+            Number(
+                weather.cloud_cover
+                ?? 0
+            );
+
+
+        currentCloudLow =
+            Number(
+                weather.cloud_cover_low
+                ?? 0
+            );
+
+
+        currentCloudMid =
+            Number(
+                weather.cloud_cover_mid
+                ?? 0
+            );
+
+
+        currentCloudHigh =
+            Number(
+                weather.cloud_cover_high
+                ?? 0
+            );
+
+
+        currentWindSpeed =
+            Number(
+                weather.wind_speed_10m
+                ?? 0
+            );
+
+
+        currentWindDirection =
+            Number(
+                weather.wind_direction_10m
+                ?? 0
+            );
+
+
+        rainIntensity =
+            precipitationToIntensity(
+                currentPrecipitation
+            );
+
+
+        console.log(
+            "Tartu weather:",
+            weather
+        );
+
+
+        updateLighting();
+
+        updateDebug();
+    }
+
+
+    catch (
+        error
+    ) {
+
+        console.error(
+            "Weather fetch failed:",
+            error
+        );
+    }
+}
+
+
+updateWeather();
+
+
+setInterval(
+    updateWeather,
+    10 * 60 * 1000
+);
+
+
+
+
+// =====================================================
+// STARS / STAR CLUSTERS
+// =====================================================
+
+const starCanvas =
+    document.querySelector("#stars");
+
+const starCtx =
+    starCanvas.getContext("2d");
+
+let starWidth = 0;
+let starHeight = 0;
+let stars = [];
+
+
+function seededRandom(seed) {
+
+    let x =
+        Math.sin(seed * 12.9898)
+        * 43758.5453;
+
+    return x - Math.floor(x);
+}
+
+
+function resizeStars() {
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.25
+        );
+
+    starWidth =
+        window.innerWidth;
+
+    starHeight =
+        window.innerHeight;
+
+    starCanvas.width =
+        Math.round(
+            starWidth * dpr
+        );
+
+    starCanvas.height =
+        Math.round(
+            starHeight * dpr
+        );
+
+    starCanvas.style.width =
+        starWidth + "px";
+
+    starCanvas.style.height =
+        starHeight + "px";
+
+    starCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    stars = [];
+
+    const clusterCenters = [
+        [0.18, 0.22],
+        [0.43, 0.16],
+        [0.68, 0.25],
+        [0.84, 0.14]
+    ];
+
+    const totalStars = 420;
+
+    for (
+        let i = 0;
+        i < totalStars;
+        i++
+    ) {
+
+        const clustered =
+            i < 190;
+
+        let x;
+        let y;
+
+        if (clustered) {
+
+            const cluster =
+                clusterCenters[
+                    i % clusterCenters.length
+                ];
+
+            const angle =
+                seededRandom(i * 3 + 1)
+                * Math.PI * 2;
+
+            const radius =
+                Math.pow(
+                    seededRandom(i * 3 + 2),
+                    1.9
+                )
+                * 0.12;
+
+            x =
+                cluster[0] +
+                Math.cos(angle) * radius;
+
+            y =
+                cluster[1] +
+                Math.sin(angle) * radius * 0.55;
+        }
+
+        else {
+
+            x =
+                seededRandom(i * 7 + 11);
+
+            y =
+                seededRandom(i * 7 + 23)
+                * 0.62;
+        }
+
+        stars.push({
+
+            x:
+                clamp(x, 0.01, 0.99),
+
+            y:
+                clamp(y, 0.01, 0.66),
+
+            radius:
+                lerp(
+                    0.45,
+                    1.55,
+                    Math.pow(
+                        seededRandom(i * 5 + 31),
+                        2.2
+                    )
+                ),
+
+            alpha:
+                lerp(
+                    0.28,
+                    0.95,
+                    seededRandom(i * 5 + 41)
+                ),
+
+            phase:
+                seededRandom(i * 5 + 51)
+                * Math.PI * 2,
+
+            speed:
+                lerp(
+                    0.4,
+                    1.5,
+                    seededRandom(i * 5 + 61)
+                )
+        });
+    }
+}
+
+
+function drawStars(now) {
+
+    starCtx.clearRect(
+        0,
+        0,
+        starWidth,
+        starHeight
+    );
+
+    const nightFactor =
+        clamp(
+            (-currentSunAltitude - 5) / 11,
+            0,
+            1
+        );
+
+    const effectiveCloud =
+        clamp(
+            Math.max(
+                currentCloudCover,
+                currentCloudHigh * 0.90
+            ) / 100,
+            0,
+            1
+        );
+
+    const clearFactor =
+        Math.pow(
+            1 - effectiveCloud,
+            1.55
+        );
+
+    // ere kuu sööb osa tähtedest ära, nagu päriseluski.
+    const moonWash =
+        1 -
+        currentMoonLightAmount * 0.48;
+
+    currentStarOpacity =
+        nightFactor *
+        clearFactor *
+        moonWash;
+
+    if (currentStarOpacity > 0.003) {
+
+        const seconds =
+            now / 1000;
+
+        for (const star of stars) {
+
+            const twinkle =
+                0.80 +
+                0.20 *
+                Math.sin(
+                    seconds * star.speed +
+                    star.phase
+                );
+
+            const alpha =
+                star.alpha *
+                twinkle *
+                currentStarOpacity;
+
+            starCtx.beginPath();
+
+            starCtx.arc(
+                star.x * starWidth,
+                star.y * starHeight,
+                star.radius,
+                0,
+                Math.PI * 2
+            );
+
+            starCtx.fillStyle =
+                `rgba(218, 230, 255, ${alpha})`;
+
+            starCtx.fill();
+        }
+    }
+
+    requestAnimationFrame(
+        drawStars
+    );
+}
+
+
+// =====================================================
+// BETTER PROCEDURAL CLOUDS
+// =====================================================
+
+const cloudCanvas =
+    document.querySelector("#clouds");
+
+const cloudCtx =
+    cloudCanvas.getContext("2d");
+
+
+// Renderime pilved väiksema resolutioniga.
+// Siis upscale + blur = palju loomulikum.
+const CLOUD_SCALE = 0.18;
+
+let cloudBuffer =
+    document.createElement("canvas");
+
+let cloudBufferCtx =
+    cloudBuffer.getContext("2d");
+
+let cloudWidth = 0;
+let cloudHeight = 0;
+
+let cloudOffsetX = 0;
+let cloudOffsetY = 0;
+
+
+// =====================================================
+// SIMPLE SMOOTH NOISE
+// =====================================================
+
+function hash(x, y) {
+
+    const n =
+        Math.sin(
+            x * 127.1 +
+            y * 311.7
+        ) * 43758.5453;
+
+    return n - Math.floor(n);
+}
+
+
+function smoothstep(t) {
+
+    return t * t * (3 - 2 * t);
+}
+
+
+function noise(x, y) {
+
+    const x0 = Math.floor(x);
+    const y0 = Math.floor(y);
+
+    const x1 = x0 + 1;
+    const y1 = y0 + 1;
+
+    const sx =
+        smoothstep(
+            x - x0
+        );
+
+    const sy =
+        smoothstep(
+            y - y0
+        );
+
+    const n00 =
+        hash(x0, y0);
+
+    const n10 =
+        hash(x1, y0);
+
+    const n01 =
+        hash(x0, y1);
+
+    const n11 =
+        hash(x1, y1);
+
+
+    const ix0 =
+        lerp(
+            n00,
+            n10,
+            sx
+        );
+
+    const ix1 =
+        lerp(
+            n01,
+            n11,
+            sx
+        );
+
+
+    return lerp(
+        ix0,
+        ix1,
+        sy
+    );
+}
+
+
+// =====================================================
+// FRACTAL NOISE
+// =====================================================
+
+function fbm(x, y) {
+
+    let value = 0;
+
+    let amplitude = 0.5;
+
+    let frequency = 1;
+
+
+    for (
+        let i = 0;
+        i < 5;
+        i++
+    ) {
+
+        value +=
+            noise(
+                x * frequency,
+                y * frequency
+            )
+            *
+            amplitude;
+
+
+        frequency *= 2;
+
+        amplitude *= 0.5;
+    }
+
+
+    return value;
+}
+
+
+// =====================================================
+// RESIZE
+// =====================================================
+
+function resizeClouds() {
+
+    cloudWidth =
+        window.innerWidth;
+
+    cloudHeight =
+        window.innerHeight;
+
+
+    cloudCanvas.width =
+        cloudWidth;
+
+    cloudCanvas.height =
+        cloudHeight;
+
+
+    cloudBuffer.width =
+        Math.max(
+            1,
+            Math.floor(
+                cloudWidth *
+                CLOUD_SCALE
+            )
+        );
+
+
+    cloudBuffer.height =
+        Math.max(
+            1,
+            Math.floor(
+                cloudHeight *
+                CLOUD_SCALE
+            )
+        );
+}
+
+
+// =====================================================
+// CLOUD RENDER
+// =====================================================
+
+function renderCloudField() {
+
+    const w =
+        cloudBuffer.width;
+
+    const h =
+        cloudBuffer.height;
+
+
+    const image =
+        cloudBufferCtx.createImageData(
+            w,
+            h
+        );
+
+    const data =
+        image.data;
+
+
+    const overallCover =
+    clamp(
+        currentCloudCover / 100,
+        0,
+        1
+    );
+
+const low =
+    clamp(
+        currentCloudLow / 100,
+        0,
+        1
+    );
+
+const mid =
+    clamp(
+        currentCloudMid / 100,
+        0,
+        1
+    );
+
+const high =
+    clamp(
+        currentCloudHigh / 100,
+        0,
+        1
+    );
+
+
+// Kui erinevad cloud layerid võivad üksteise auke katta,
+// siis kombineeritud nähtav coverage on sisuliselt union.
+const layeredCover =
+    1 -
+    (1 - low) *
+    (1 - mid) *
+    (1 - high);
+
+
+// Natuke bias'i juurde, sest procedural noise kipub
+// visuaalselt vähem covered tunduma kui päris taevas.
+const cover =
+    clamp(
+        Math.max(
+            overallCover,
+            layeredCover
+        ) * 1.12,
+        0,
+        1
+    );
+
+    // rohkem cloud cover = oluliselt madalam threshold
+    // ehk rohkem pilvemassi
+    const threshold =
+        lerp(
+            0.82,
+            0.01,
+            cover
+        );
+
+    // palju pilvi = läbipaistmatus suuremaks
+    const alphaMax =
+        lerp(
+            175,
+            255,
+            cover
+        );
+
+    const storminess =
+        clamp(
+            currentPrecipitation / 2.5 +
+            cover * 0.25,
+            0,
+            1
+        );
+
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+
+            const nx =
+                x / 58 +
+                cloudOffsetX;
+
+            const ny =
+                y / 34 +
+                cloudOffsetY;
+
+
+            // suuremad cloud banks
+            let n =
+                fbm(nx, ny) * 0.72 +
+                fbm(
+                    nx * 0.42 + 31.7,
+                    ny * 0.42 + 11.2
+                ) * 0.28;
+
+
+            let density =
+                (n - threshold) /
+                (1 - threshold);
+
+            density =
+                clamp(
+                    density,
+                    0,
+                    1
+                );
+
+            // rohkem fill'i, vähem “aukude” tunnet
+            density =
+                Math.pow(
+                    smoothstep(density),
+                    0.72
+                );
+
+
+            const index =
+                (y * w + x) * 4;
+
+
+            // =================================================
+            // CLOUD COLOR
+            // =================================================
+
+let r = 215;
+let g = 223;
+let b = 235;
+
+
+// öö / pärast loojangut
+if (currentSunAltitude < -3) {
+
+    r = 58;
+    g = 74;
+    b = 108;
+}
+
+// hiline twilight
+else if (currentSunAltitude < 1.5) {
+
+    const t =
+        clamp(
+            (currentSunAltitude + 3) / 4.5,
+            0,
+            1
+        );
+
+    r =
+        Math.round(
+            lerp(58, 96, t)
+        );
+
+    g =
+        Math.round(
+            lerp(74, 108, t)
+        );
+
+    b =
+        Math.round(
+            lerp(108, 138, t)
+        );
+}
+
+// madal päevapäike
+else if (currentSunAltitude < 10) {
+
+    const t =
+        clamp(
+            (currentSunAltitude - 1.5) / 8.5,
+            0,
+            1
+        );
+
+    r =
+        Math.round(
+            lerp(96, 205, t)
+        );
+
+    g =
+        Math.round(
+            lerp(108, 214, t)
+        );
+
+    b =
+        Math.round(
+            lerp(138, 228, t)
+        );
+}
+
+
+// vihm/paks pilv = tumedam, aga sinakalt
+r =
+    Math.round(
+        lerp(
+            r,
+            72,
+            storminess * 0.55
+        )
+    );
+
+g =
+    Math.round(
+        lerp(
+            g,
+            86,
+            storminess * 0.55
+        )
+    );
+
+b =
+    Math.round(
+        lerp(
+            b,
+            118,
+            storminess * 0.50
+        )
+    );
+
+
+            data[index] = r;
+            data[index + 1] = g;
+            data[index + 2] = b;
+            data[index + 3] =
+                Math.round(
+                    density * alphaMax
+                );
+        }
+    }
+
+
+    cloudBufferCtx.putImageData(
+        image,
+        0,
+        0
+    );
+}
+
+
+// =====================================================
+// CLOUD MOVEMENT
+// =====================================================
+
+let lastCloudUpdate =
+    performance.now();
+
+let lastCloudTextureUpdate =
+    0;
+
+
+function drawClouds(now) {
+
+    const dt =
+        Math.min(
+            (
+                now -
+                lastCloudUpdate
+            )
+            /
+            1000,
+            0.05
+        );
+
+
+    lastCloudUpdate =
+        now;
+
+
+    // meteorological direction:
+    // direction wind COMES FROM
+
+    const direction =
+        (
+            currentWindDirection +
+            180
+        )
+        %
+        360;
+
+
+    const rad =
+        direction *
+        Math.PI /
+        180;
+
+
+    const speed =
+        0.006 +
+        currentWindSpeed *
+        0.0015;
+
+
+    cloudOffsetX +=
+        Math.sin(rad) *
+        speed *
+        dt;
+
+
+    cloudOffsetY +=
+        -Math.cos(rad) *
+        speed *
+        dt;
+
+
+    // Texturet pole vaja 60 FPS regenereerida.
+    // ~12 FPS on pilvede jaoks täiesti piisav.
+
+    if (
+        now -
+        lastCloudTextureUpdate >
+        80
+    ) {
+
+        renderCloudField();
+
+        lastCloudTextureUpdate =
+            now;
+    }
+
+
+    cloudCtx.clearRect(
+        0,
+        0,
+        cloudWidth,
+        cloudHeight
+    );
+
+
+    cloudCtx.save();
+
+
+    // suur blur eemaldab noise-grid tunde
+
+    cloudCtx.filter =
+        "blur(18px)";
+
+
+    cloudCtx.globalAlpha =
+        0.92;
+
+
+    cloudCtx.drawImage(
+        cloudBuffer,
+        -30,
+        -30,
+        cloudWidth + 60,
+        cloudHeight + 60
+    );
+
+
+    cloudCtx.restore();
+
+
+    // =================================================
+    // SUNLIGHT ON CLOUDS
+    // =================================================
+
+    // currentSunAltitude is updated in updateLighting().
+    // Below -2° the direct warm highlight is gone.
+    const cloudSunFactor =
+        clamp(
+            (currentSunAltitude + 2) / 10,
+            0,
+            1
+        );
+
+    if (cloudSunFactor > 0.01) {
+
+        const sunX =
+            cloudWidth *
+            currentSunX / 100;
+
+        const sunY =
+            cloudHeight *
+            currentSunY / 100;
+
+        const gradient =
+            cloudCtx.createRadialGradient(
+                sunX,
+                sunY,
+                0,
+                sunX,
+                sunY,
+                cloudWidth * 0.55
+            );
+
+        const warmth =
+            currentSunAltitude < 8;
+
+        if (warmth) {
+
+            gradient.addColorStop(
+                0,
+                `rgba(255,185,110,${0.14 * cloudSunFactor})`
+            );
+
+            gradient.addColorStop(
+                0.4,
+                `rgba(255,175,100,${0.04 * cloudSunFactor})`
+            );
+        }
+        else {
+
+            gradient.addColorStop(
+                0,
+                `rgba(235,245,255,${0.08 * cloudSunFactor})`
+            );
+
+            gradient.addColorStop(
+                0.4,
+                `rgba(235,245,255,${0.025 * cloudSunFactor})`
+            );
+        }
+
+        gradient.addColorStop(
+            1,
+            "rgba(255,255,255,0)"
+        );
+
+        cloudCtx.globalCompositeOperation =
+            "screen";
+
+        cloudCtx.fillStyle =
+            gradient;
+
+        cloudCtx.fillRect(
+            0,
+            0,
+            cloudWidth,
+            cloudHeight
+        );
+
+        cloudCtx.globalCompositeOperation =
+            "source-over";
+    }
+
+    requestAnimationFrame(
+        drawClouds
+    );
+}
+
+// =====================================================
+// RAIN
+// =====================================================
+
+const rainCanvas =
+    document.querySelector("#rain");
+
+
+const rainCtx =
+    rainCanvas.getContext("2d");
+
+
+const MAX_DROPS =
+    1800;
+
+
+let drops =
+    [];
+
+
+function resizeRain() {
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio
+            || 1,
+            1.25
+        );
+
+
+    const width =
+        window.innerWidth;
+
+
+    const height =
+        window.innerHeight;
+
+
+    rainCanvas.width =
+        Math.round(
+            width
+            *
+            dpr
+        );
+
+
+    rainCanvas.height =
+        Math.round(
+            height
+            *
+            dpr
+        );
+
+
+    rainCanvas.style.width =
+        width
+        +
+        "px";
+
+
+    rainCanvas.style.height =
+        height
+        +
+        "px";
+
+
+    rainCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    drops =
+        [];
+
+
+    for (
+        let i = 0;
+        i < MAX_DROPS;
+        i++
+    ) {
+
+        drops.push({
+
+            x:
+                Math.random()
+                *
+                width,
+
+            y:
+                Math.random()
+                *
+                height,
+
+            speed:
+                11
+                +
+                Math.random()
+                *
+                17,
+
+            length:
+                14
+                +
+                Math.random()
+                *
+                26
+        });
+    }
+}
+
+
+// =====================================================
+// DRAW RAIN
+// =====================================================
+
+function drawRain() {
+
+    const width =
+        window.innerWidth;
+
+
+    const height =
+        window.innerHeight;
+
+
+    rainCtx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+
+    const activeDrops =
+        Math.floor(
+            drops.length
+            *
+            rainIntensity
+        );
+
+
+    rainCtx.lineWidth =
+        lerp(
+            0.8,
+            1.7,
+            rainIntensity
+        );
+
+
+    const opacity =
+        lerp(
+            0.18,
+            0.48,
+            rainIntensity
+        );
+
+
+    rainCtx.strokeStyle =
+        `rgba(
+            215,
+            230,
+            240,
+            ${opacity}
+        )`;
+
+
+    const lengthMultiplier =
+        lerp(
+            0.85,
+            1.55,
+            rainIntensity
+        );
+
+
+    const speedMultiplier =
+        lerp(
+            0.85,
+            1.35,
+            rainIntensity
+        );
+
+
+    // rain also reacts to wind
+
+    const flowDirection =
+        (
+            currentWindDirection
+            +
+            180
+        )
+        %
+        360;
+
+
+    const flowRad =
+        flowDirection
+        *
+        Math.PI
+        /
+        180;
+
+
+    const windLean =
+        -Math.sin(
+            flowRad
+        )
+        *
+        clamp(
+            currentWindSpeed
+            *
+            0.9,
+            0,
+            9
+        );
+
+
+    const baseSlant =
+        lerp(
+            2,
+            7,
+            rainIntensity
+        );
+
+
+    const slant =
+        baseSlant
+        +
+        windLean;
+
+
+    rainCtx.beginPath();
+
+
+    for (
+        let i = 0;
+        i < activeDrops;
+        i++
+    ) {
+
+        const d =
+            drops[i];
+
+
+        rainCtx.moveTo(
+            d.x,
+            d.y
+        );
+
+
+        rainCtx.lineTo(
+            d.x
+            -
+            slant,
+
+            d.y
+            +
+            d.length
+            *
+            lengthMultiplier
+        );
+
+
+        d.y +=
+            d.speed
+            *
+            speedMultiplier;
+
+
+        d.x -=
+            slant
+            *
+            0.15;
+
+
+        if (
+            d.y >
+            height
+            +
+            50
+
+            ||
+
+            d.x < -80
+
+            ||
+
+            d.x >
+            width
+            +
+            80
+        ) {
+
+            d.y =
+                -50
+                -
+                Math.random()
+                *
+                100;
+
+
+            d.x =
+                Math.random()
+                *
+                width;
+        }
+    }
+
+
+    rainCtx.stroke();
+
+
+    requestAnimationFrame(
+        drawRain
+    );
+}
+
+
+
+
+// =====================================================
+// SCREEN / LENS RAINDROPS
+// =====================================================
+
+const raindropCanvas =
+    document.querySelector("#raindrops");
+
+const raindropCtx =
+    raindropCanvas.getContext("2d");
+
+let raindropWidth = 0;
+let raindropHeight = 0;
+let screenDroplets = [];
+
+
+function resetScreenDroplet(
+    droplet,
+    randomY = true
+) {
+
+    droplet.x =
+        Math.random() *
+        raindropWidth;
+
+    droplet.y =
+        randomY
+        ? Math.random() * raindropHeight
+        : -30 - Math.random() * 100;
+
+    droplet.radius =
+        2.2 +
+        Math.random() * 8.5;
+
+    droplet.stretch =
+        1.0 +
+        Math.random() * 1.7;
+
+    droplet.alpha =
+        0.10 +
+        Math.random() * 0.22;
+
+    droplet.speed =
+        0.08 +
+        Math.random() * 0.34;
+
+    droplet.phase =
+        Math.random() * Math.PI * 2;
+}
+
+
+function resizeScreenDroplets() {
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            1.25
+        );
+
+    raindropWidth =
+        window.innerWidth;
+
+    raindropHeight =
+        window.innerHeight;
+
+    raindropCanvas.width =
+        Math.round(
+            raindropWidth * dpr
+        );
+
+    raindropCanvas.height =
+        Math.round(
+            raindropHeight * dpr
+        );
+
+    raindropCanvas.style.width =
+        raindropWidth + "px";
+
+    raindropCanvas.style.height =
+        raindropHeight + "px";
+
+    raindropCtx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    screenDroplets = [];
+
+    for (
+        let i = 0;
+        i < 170;
+        i++
+    ) {
+
+        const droplet = {};
+
+        resetScreenDroplet(
+            droplet,
+            true
+        );
+
+        screenDroplets.push(
+            droplet
+        );
+    }
+}
+
+
+function drawScreenDroplets(now) {
+
+    raindropCtx.clearRect(
+        0,
+        0,
+        raindropWidth,
+        raindropHeight
+    );
+
+    // ilma päris sademeta on klaas puhas.
+    if (rainIntensity <= 0.001) {
+
+        requestAnimationFrame(
+            drawScreenDroplets
+        );
+
+        return;
+    }
+
+
+    const dropletFactor =
+        clamp(
+            (rainIntensity - 0.015) / 0.55,
+            0,
+            1
+        );
+
+    const activeDroplets =
+        Math.floor(
+            lerp(
+                20,
+                screenDroplets.length,
+                dropletFactor
+            )
+        );
+
+
+    for (
+        let i = 0;
+        i < activeDroplets;
+        i++
+    ) {
+
+        const d =
+            screenDroplets[i];
+
+        const wobble =
+            Math.sin(
+                now * 0.0012 +
+                d.phase
+            ) * 0.7;
+
+
+        // tume serv / refraktsiooni vari
+        raindropCtx.beginPath();
+
+        raindropCtx.ellipse(
+            d.x,
+            d.y,
+            d.radius,
+            d.radius * d.stretch,
+            wobble * 0.04,
+            0,
+            Math.PI * 2
+        );
+
+        raindropCtx.strokeStyle =
+            `rgba(
+                12,
+                22,
+                36,
+                ${d.alpha * 0.72}
+            )`;
+
+        raindropCtx.lineWidth =
+            1.0;
+
+        raindropCtx.stroke();
+
+
+        // külm highlight
+        raindropCtx.beginPath();
+
+        raindropCtx.ellipse(
+            d.x - d.radius * 0.18,
+            d.y - d.radius * 0.22,
+            d.radius * 0.56,
+            d.radius * d.stretch * 0.52,
+            wobble * 0.04,
+            0,
+            Math.PI * 2
+        );
+
+        raindropCtx.strokeStyle =
+            `rgba(
+                220,
+                235,
+                255,
+                ${d.alpha}
+            )`;
+
+        raindropCtx.lineWidth =
+            0.75;
+
+        raindropCtx.stroke();
+
+
+        // Mõni piisk hakkab aeglaselt alla jooksma.
+        const moving =
+            i % 7 === 0;
+
+        if (moving) {
+
+            d.y +=
+                d.speed *
+                lerp(
+                    0.55,
+                    3.0,
+                    rainIntensity
+                );
+
+            if (
+                d.y >
+                raindropHeight + 40
+            ) {
+
+                resetScreenDroplet(
+                    d,
+                    false
+                );
+            }
+        }
+    }
+
+
+    requestAnimationFrame(
+        drawScreenDroplets
+    );
+}
+
+
+// =====================================================
+// DEBUG
+// =====================================================
+
+function updateDebug() {
+
+    debug.innerHTML =
+        `
+        Tartu<br>
+
+        view az:
+        ${VIEW_AZIMUTH.toFixed(0)}°<br>
+
+        sun az:
+        ${currentSunAzimuth.toFixed(1)}°<br>
+
+        sun alt:
+        ${currentSunAltitude.toFixed(1)}°<br>
+
+        sun visible:
+        ${currentSunInView ? "yes" : "no"}<br>
+
+        moon az:
+        ${currentMoonAzimuth.toFixed(1)}°<br>
+
+        moon alt:
+        ${currentMoonAltitude.toFixed(1)}°<br>
+
+        moon visible:
+        ${currentMoonInView ? "yes" : "no"}<br>
+
+        moon illum:
+        ${(currentMoonIllumination * 100).toFixed(0)}%<br>
+
+        moon light:
+        ${currentMoonLightAmount.toFixed(2)}<br>
+
+        stars:
+        ${currentStarOpacity.toFixed(2)}<br>
+
+        fg brightness:
+        ${currentForegroundBrightness.toFixed(2)}<br>
+
+        fg saturation:
+        ${currentForegroundSaturation.toFixed(2)}<br>
+
+        haze:
+        ${currentSceneHazeOpacity.toFixed(2)}<br>
+
+        precipitation:
+        ${currentPrecipitation.toFixed(2)} mm<br>
+
+        rain:
+        ${currentRain.toFixed(2)} mm<br>
+
+        showers:
+        ${currentShowers.toFixed(2)} mm<br>
+
+        rain intensity:
+        ${rainIntensity.toFixed(2)}<br>
+
+        clouds:
+        ${currentCloudCover.toFixed(0)}%<br>
+
+        low:
+        ${currentCloudLow.toFixed(0)}%<br>
+
+        mid:
+        ${currentCloudMid.toFixed(0)}%<br>
+
+        high:
+        ${currentCloudHigh.toFixed(0)}%<br>
+
+        wind:
+        ${currentWindSpeed.toFixed(1)} m/s<br>
+
+        wind dir:
+        ${currentWindDirection.toFixed(0)}°
+        `;
+}
+
+
+// =====================================================
+// RESIZE + START
+// =====================================================
+
+function resizeAll() {
+
+    resizeStars();
+
+    resizeClouds();
+
+    resizeRain();
+
+    resizeScreenDroplets();
+}
+
+
+window.addEventListener(
+    "resize",
+    resizeAll
+);
+
+
+resizeAll();
+
+
+requestAnimationFrame(
+    drawStars
+);
+
+requestAnimationFrame(
+    drawClouds
+);
+
+
+drawRain();
+
+requestAnimationFrame(
+    drawScreenDroplets
+);
+
+
+updateDebug();
+
+</script>
+
+</body>
+</html>
